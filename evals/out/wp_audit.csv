@@ -1,0 +1,5 @@
+model,log_loss,auc,squared moves per innings,budget p0(1-p0),early wicket cost,early six gain,"12 off 6, 5 wkts"
+M0 plain logistic (first version),0.41,0.893,0.155,0.182,0.152,0.061,0.491
+M1 logistic + squares/interactions,0.404,0.895,0.167,0.206,0.16,0.05,0.699
+M2 logistic + cricket features (in use),0.405,0.895,0.167,0.192,0.15,0.053,0.713
+"M3 boosting, monotonic",0.408,0.893,0.204,0.197,0.177,0.069,0.589

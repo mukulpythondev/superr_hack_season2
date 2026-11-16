@@ -1,0 +1,9 @@
+change,batters kept (of 10),bowlers kept (of 10)
+knockout balls: no extra weight,9,10
+knockout balls: double weight,9,10
+collapse = 2+ wickets down,8,10
+chase start = target 170+,8,10
+chase start = target 190+,10,10
+wicket always worth 8 runs,5,8
+wicket always worth 12 runs,8,9
+minimum 200 pressure balls,9,10

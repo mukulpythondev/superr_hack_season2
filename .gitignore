@@ -1,0 +1,12 @@
+# local environment
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# proprietary data pack and reference material: never commit
+data/
+reference/
+
+# large generated tables (recreated by the pipeline in a few minutes)
+outputs/interim/

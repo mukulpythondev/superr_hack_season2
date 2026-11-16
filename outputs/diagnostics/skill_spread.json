@@ -1,0 +1,116 @@
+{
+ "bat": {
+  "cricket_any": {
+   "tau_usual": 4.1795768377247295,
+   "slope": 1.0,
+   "tau_pressure_specific": 6.1744347278727805
+  },
+  "cricket_A_collapse": {
+   "tau_usual": 5.586278962162605,
+   "slope": 1.0,
+   "tau_pressure_specific": 4.548802750018694
+  },
+  "cricket_B_big_chase": {
+   "tau_usual": 5.317751969365742,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_C_finish": {
+   "tau_usual": 8.80502091723286,
+   "slope": 1.0,
+   "tau_pressure_specific": 4.797833337317265
+  },
+  "cricket_I_chase_start": {
+   "tau_usual": 10.227132174709297,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_pooled": {
+   "tau_usual": 7.198284338161714,
+   "slope": 1.0,
+   "tau_pressure_specific": 4.045601448487282
+  },
+  "total": {
+   "tau_usual": 7.561080899546514,
+   "slope": 1.0,
+   "tau_pressure_specific": 2.8711758178449642
+  },
+  "bat_p_boundary": {
+   "tau_usual": 11.363068999964522,
+   "slope": 1.0,
+   "tau_pressure_specific": 4.955329174598223
+  },
+  "bat_p_rotation": {
+   "tau_usual": 4.7277101305984175,
+   "slope": 1.0,
+   "tau_pressure_specific": 1.3133658459620925
+  },
+  "bat_p_wicket": {
+   "tau_usual": 9.091850935866677,
+   "slope": 1.0,
+   "tau_pressure_specific": 3.0238657472311345
+  },
+  "total_alt": {
+   "tau_usual": 6.296794830276544,
+   "slope": 1.0,
+   "tau_pressure_specific": 8.160903346475516
+  }
+ },
+ "bowl": {
+  "cricket_any": {
+   "tau_usual": 6.857098891979284,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_E_death": {
+   "tau_usual": 1.0,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_F_set_batter": {
+   "tau_usual": 6.263342898956094,
+   "slope": 1.0,
+   "tau_pressure_specific": 8.009256390127735
+  },
+  "cricket_G_small_total": {
+   "tau_usual": 7.577929394526465,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_H_bounce_back": {
+   "tau_usual": 6.544643638389629,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "cricket_pooled": {
+   "tau_usual": 6.123832847918521,
+   "slope": 1.0,
+   "tau_pressure_specific": 3.581848347510038
+  },
+  "total": {
+   "tau_usual": 7.062084750272687,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "bowl_p_boundary": {
+   "tau_usual": 7.689603471017081,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "bowl_p_rotation": {
+   "tau_usual": 2.3383995886007307,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "bowl_p_wicket": {
+   "tau_usual": 5.370142849943113,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  },
+  "total_alt": {
+   "tau_usual": 7.788611222043746,
+   "slope": 1.0,
+   "tau_pressure_specific": 0.0
+  }
+ }
+}

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Over Lab: who delivers under pressure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0F1B3D;      /* sky above the ground after the lights come on */
+    --stand: #0A1230;      /* the dark of the stands and the scoreboard housing */
+    --bulb: #FFB627;       /* scoreboard bulbs */
+    --leather: #C2263C;    /* the ball */
+    --outfield: #1F9D68;   /* grass under lights */
+    --chalk: #EAF0FB;      /* crease markings, body text */
+    --haze: #8E9BC2;       /* quiet text */
+    --line: rgba(234, 240, 251, .14);
+    --display: "Bungee", "Impact", sans-serif;
+    --text: "Chakra Petch", "Trebuchet MS", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--chalk); font-family: var(--text); font-size: 17px; line-height: 1.55;
+    background:
+      radial-gradient(900px 420px at 8% -8%, rgba(234,240,251,.20), transparent 60%),
+      radial-gradient(900px 420px at 92% -8%, rgba(234,240,251,.16), transparent 60%),
+      var(--night);
+    background-attachment: fixed;
+  }
+  a { color: var(--bulb); }
+  button { font-family: var(--text); cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--bulb); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+
+  /* nav */
+  .top { position: sticky; top: 0; z-index: 20; background: rgba(10,18,48,.92); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+  .top .wrap { display: flex; align-items: center; gap: 18px; min-height: 56px; flex-wrap: wrap; }
+  .brand { font-family: var(--display); font-size: 18px; letter-spacing: .5px; color: var(--chalk); text-decoration: none; margin-right: auto; }
+  .brand b { color: var(--bulb); font-weight: 400; }
+  .top nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  .top nav a { color: var(--chalk); text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 12px; border-radius: 6px; }
+  .top nav a:hover { background: rgba(255,182,39,.14); color: var(--bulb); }
+
+  section { padding: 76px 0 28px; scroll-margin-top: 64px; }
+  h1, h2 { font-family: var(--display); font-weight: 400; line-height: 1.02; margin: 0; }
+  h1 { font-size: clamp(34px, 6.4vw, 74px); max-width: 15ch; }
+  h2 { font-size: clamp(26px, 3.8vw, 42px); }
+  .lede { max-width: 62ch; color: var(--chalk); margin: 16px 0 0; font-size: 19px; }
+  .quiet { color: var(--haze); }
+  .sub { max-width: 66ch; margin: 12px 0 26px; color: var(--haze); }
+
+  function burst(el, n = 26) {
+  const r = el.getBoundingClientRect(), box = document.createElement("div"); box.className = "burst";
+  box.style.left = r.left + r.width / 2 + "px"; box.style.top = r.top + r.height / 2 + "px";
+  const cols = ["#FFB627", "#1F9D68", "#EAF0FB", "#C2263C"];
+  for (let i = 0; i < n; i++) { const p = document.createElement("i"), a = Math.random() * 6.28, d = 80 + Math.random() * 160;
+    p.style.background = cols[i % 4]; p.style.setProperty("--x", Math.cos(a) * d + "px"); p.style.setProperty("--y", Math.sin(a) * d - 60 + "px"); box.appendChild(p); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1000);
+}
+/* ---------- hero scoreboard ---------- */
+  #play { padding-top: 44px; }
+  .board {
+    margin-top: 30px; background: var(--stand); border: 2px solid #1c2a5c; border-radius: 14px; padding: 22px;
+    box-shadow: 0 30px 60px -30px #000, inset 0 0 0 6px #060b22;
+    display: grid; grid-template-columns: 1.15fr 1fr; gap: 26px;
+  }
+  .dials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .dial { background: #050a1c; border-radius: 10px; padding: 12px 10px 10px; text-align: center;
+          background-image: radial-gradient(rgba(255,182,39,.10) 1px, transparent 1.4px); background-size: 7px 7px; }
+  .dial .what { font-size: 14px; font-weight: 600; color: var(--haze); }
+  .dial .num { font-family: var(--display); font-size: clamp(44px, 7vw, 76px); line-height: 1; color: var(--bulb); text-shadow: 0 0 18px rgba(255,182,39,.55); margin: 4px 0 8px; font-variant-numeric: tabular-nums; }
+  .step { display: flex; justify-content: center; gap: 8px; }
+  .step button { width: 40px; height: 34px; border-radius: 8px; border: 1px solid #2a3a78; background: #111c46; color: var(--chalk); font-size: 20px; font-weight: 700; line-height: 1; }
+  .step button:hover { background: #1b2a63; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+  .presets span { font-size: 14px; color: var(--haze); }
+  .chip { border: 1px solid #2a3a78; background: transparent; color: var(--chalk); padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 600; }
+  .chip:hover, .chip[aria-pressed="true"] { border-color: var(--bulb); color: var(--bulb); }
+
+  .balls { margin-top: 18px; }
+  .balls p { margin: 0 0 8px; font-weight: 600; }
+  .ballrow { display: flex; flex-wrap: wrap; gap: 10px; }
+  .ball { width: 54px; height: 54px; border-radius: 50%; border: 0; color: #fff; font-family: var(--display); font-size: 19px;
+          background: radial-gradient(circle at 32% 28%, #e8566b, var(--leather) 58%, #7c1223); box-shadow: inset 0 -5px 0 rgba(0,0,0,.25), 0 6px 14px -6px #000; position: relative; }
+  .ball::after { content: ""; position: absolute; inset: 7px 20px; border-left: 2px dashed rgba(255,255,255,.45); border-right: 2px dashed rgba(255,255,255,.45); border-radius: 50%; pointer-events: none; }
+  .ball:active { transform: translateY(2px); }
+  .ball.out { background: radial-gradient(circle at 32% 28%, #444d6e, #1a2244 60%, #0a1026); }
+  .ball[disabled] { opacity: .35; cursor: not-allowed; }
+  .log { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; min-height: 30px; }
+  .log span { font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 6px; background: #111c46; }
+  .log .up { color: #7ff0bd; } .log .down { color: #ff8fa0; }
+
+  .read { display: flex; flex-direction: column; gap: 18px; }
+  .tug { background: #050a1c; border-radius: 10px; padding: 14px; }
+  .tug .ends { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; }
+  .tug .ends b { font-family: var(--display); font-weight: 400; font-size: 26px; }
+  .rope { height: 22px; border-radius: 999px; background: #dfe6f7; overflow: hidden; margin-top: 8px; }
+  .rope i { display: block; height: 100%; width: 50%; background: var(--bulb); border-right: 4px solid var(--leather); transition: width .45s cubic-bezier(.2,.8,.2,1); }
+  .gauge { background: #050a1c; border-radius: 10px; padding: 14px 14px 12px; display: grid; grid-template-columns: 170px 1fr; gap: 14px; align-items: center; }
+  .gauge svg { width: 170px; height: 100px; }
+  .gauge .needle { transform-origin: 85px 88px; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+  .gauge h3 { font-family: var(--display); font-weight: 400; font-size: 24px; margin: 0 0 4px; }
+  .gauge p { margin: 0; font-size: 15px; color: var(--haze); }
+  .verdict { font-size: 15px; color: var(--haze); margin: 0; }
+  .verdict strong { color: var(--chalk); }
+
+  /* ---------- draft game ---------- */
+  .gamebar { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; margin-bottom: 16px; }
+  .gamebar .stat b { font-family: var(--display); font-weight: 400; font-size: 28px; color: var(--bulb); margin-right: 6px; }
+  .brief { background: var(--outfield); color: #04160d; border-radius: 12px; padding: 16px 18px; font-weight: 600; font-size: 19px; max-width: 760px; }
+  .brief small { display: block; font-weight: 500; font-size: 15px; opacity: .85; margin-top: 2px; }
+  .picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; max-width: 900px; }
+  .pick { text-align: left; background: #111c46; color: var(--chalk); border: 2px solid #2a3a78; border-radius: 12px; padding: 16px; min-height: 132px; display: flex; flex-direction: column; gap: 6px; }
+  .pick:hover:not([disabled]) { border-color: var(--bulb); transform: translateY(-2px); }
+  .pick .nm { font-weight: 700; font-size: 19px; line-height: 1.2; }
+  .pick .rl { font-size: 14px; color: var(--haze); }
+  .pick .val { margin-top: auto; font-family: var(--display); font-size: 22px; visibility: hidden; }
+  .pick.shown .val { visibility: visible; }
+  .pick.best { border-color: var(--outfield); background: #0f3b2c; }
+  .pick.wrong { border-color: var(--leather); background: #3a1220; }
+  .after { margin-top: 14px; min-height: 52px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .go { background: var(--bulb); color: #1a1200; border: 0; font-weight: 700; font-size: 16px; padding: 11px 20px; border-radius: 8px; }
+  .go:hover { filter: brightness(1.08); }
+  .final { background: #111c46; border: 2px solid var(--bulb); border-radius: 12px; padding: 22px; max-width: 620px; }
+  .final h3 { font-family: var(--display); font-weight: 400; font-size: 30px; margin: 0 0 6px; color: var(--bulb); }
+
+  /* ---------- rankings ---------- */
+  .tabs { display: inline-flex; background: #050a1c; border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 18px; }
+  .tabs button { border: 0; background: transparent; color: var(--chalk); font-weight: 700; font-size: 16px; padding: 9px 18px; border-radius: 7px; }
+  .tabs button[aria-selected="true"] { background: var(--bulb); color: #1a1200; }
+  .sheet { border-top: 2px solid var(--chalk); }
+  .row { display: grid; grid-template-columns: 62px minmax(170px, 1.2fr) 84px minmax(220px, 1.6fr) 28px; gap: 14px; align-items: center;
+         width: 100%; text-align: left; background: transparent; color: var(--chalk); border: 0; border-bottom: 1px solid var(--line); padding: 12px 6px; font-size: 16px; }
+  .row:hover { background: rgba(234,240,251,.05); }
+  .row .rk { font-family: var(--display); font-size: 30px; color: var(--haze); }
+  .row.top3 .rk { color: var(--bulb); }
+  .row .nm { font-weight: 700; font-size: 19px; line-height: 1.15; }
+  .row .nm small { display: block; font-weight: 500; font-size: 14px; color: var(--haze); }
+  .row .ovr { font-family: var(--display); font-size: 26px; text-align: center; background: var(--chalk); color: var(--stand); border-radius: 8px; padding: 4px 0; }
+  .how { display: grid; gap: 4px; }
+  .bar { display: grid; grid-template-columns: 78px 1fr 44px; gap: 8px; align-items: center; font-size: 13px; color: var(--haze); }
+  .bar .track { height: 8px; background: #17245a; border-radius: 4px; position: relative; }
+  .bar .track::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--haze); }
+  .bar .fill { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .bar .fill.pos { left: 50%; background: var(--outfield); } .bar .fill.neg { right: 50%; background: var(--leather); }
+  .bar b { color: var(--chalk); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .row .tw { font-size: 20px; color: var(--haze); transition: transform .2s; }
+  .row[aria-expanded="true"] .tw { transform: rotate(90deg); color: var(--bulb); }
+  .more { display: none; padding: 6px 6px 20px 82px; border-bottom: 1px solid var(--line); }
+  .more.open { display: block; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 6px 0 12px; }
+  .fact { background: #111c46; border-radius: 8px; padding: 10px 12px; }
+  .fact b { display: block; font-family: var(--display); font-weight: 400; font-size: 22px; }
+  .fact span { font-size: 13px; color: var(--haze); }
+  .sits { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sits span { border: 1px solid #2a3a78; border-radius: 999px; padding: 4px 12px; font-size: 14px; }
+  .sits span b { color: var(--bulb); }
+  .showall { margin-top: 16px; }
+  .key { font-size: 14px; color: var(--haze); max-width: 78ch; margin-top: 14px; }
+
+
+  /* podium */
+  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: end; max-width: 860px; margin: 6px 0 30px; }
+  .pod { position: relative; border-radius: 16px 16px 0 0; padding: 18px 14px 16px; text-align: center; background: linear-gradient(180deg, #1a2a66, #0c1638); border: 2px solid #2a3a78; border-bottom: 0; }
+  .pod.p1 { order: 2; padding-bottom: 46px; border-color: var(--bulb); box-shadow: 0 -18px 50px -22px rgba(255,182,39,.8); }
+  .pod.p2 { order: 1; padding-bottom: 28px; } .pod.p3 { order: 3; }
+  .pod .av { width: 76px; height: 76px; border-radius: 50%; margin: 0 auto 10px; display: grid; place-items: center; font-family: var(--display); font-size: 26px; color: var(--stand); background: var(--chalk); border: 4px solid var(--outfield); }
+  .pod.p1 .av { width: 96px; height: 96px; font-size: 32px; background: var(--bulb); border-color: #fff; }
+  .pod .pn { font-weight: 700; font-size: 18px; line-height: 1.2; }
+  .pod .pr { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--bulb); margin-top: 8px; }
+  .pod .ps { font-size: 13px; color: var(--haze); }
+  .pod .medal { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-family: var(--display); font-size: 15px; background: var(--leather); color: #fff; border-radius: 999px; padding: 3px 14px; }
+  .pod.p1 .medal { background: var(--bulb); color: #1a1200; }
+  /* burst */
+  .burst { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 50; }
+  .burst i { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: fly .9s cubic-bezier(.1,.7,.3,1) forwards; }
+  @keyframes fly { to { transform: translate(var(--x), var(--y)) rotate(540deg); opacity: 0; } }
+  .dial .num.bump { animation: bump .28s ease-out; }
+  @keyframes bump { 40% { transform: scale(1.18); } }
+  .board.won { border-color: var(--outfield); box-shadow: 0 0 60px -10px rgba(31,157,104,.8), inset 0 0 0 6px #060b22; }
+  .board.lost { border-color: var(--leather); box-shadow: 0 0 60px -10px rgba(194,38,60,.8), inset 0 0 0 6px #060b22; }
+  @media (max-width: 860px) { .podium { gap: 8px; } .pod .av, .pod.p1 .av { width: 56px; height: 56px; font-size: 20px; } .pod .pn { font-size: 15px; } .pod .pr { font-size: 28px; } }
+  @media (prefers-reduced-motion: reduce) { .burst { display: none; } .dial .num.bump { animation: none; } }
+
+  /* ---------- skill or luck ---------- */
+  .repeat { max-width: 820px; display: grid; gap: 10px; }
+  .rp { display: grid; grid-template-columns: 250px 1fr 54px; gap: 12px; align-items: center; }
+  .rp .lbl { font-weight: 600; }
+  .rp .track { height: 22px; background: #050a1c; border-radius: 6px; position: relative; overflow: hidden; }
+  .rp .track::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 20%; background: repeating-linear-gradient(135deg, rgba(194,38,60,.35) 0 6px, transparent 6px 12px); }
+  .rp .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--outfield); border-radius: 6px; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+  .rp .fill.luck { background: var(--leather); }
+  .rp b { font-family: var(--display); font-weight: 400; font-size: 18px; text-align: right; }
+
+  /* ---------- method ---------- */
+  .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 34px; max-width: 980px; counter-reset: s; padding: 0; list-style: none; }
+  .steps li { counter-increment: s; border-top: 1px solid var(--line); padding: 16px 0 16px 58px; position: relative; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 12px; font-family: var(--display); font-size: 34px; color: var(--bulb); }
+  .steps h3 { margin: 0 0 4px; font-size: 19px; }
+  .steps p { margin: 0; color: var(--haze); font-size: 16px; }
+  footer { margin-top: 70px; border-top: 1px solid var(--line); padding: 24px 0 50px; color: var(--haze); font-size: 14px; }
+  footer p { max-width: 82ch; margin: 0 0 8px; }
+
+  @media (max-width: 860px) {
+    .board { grid-template-columns: 1fr; padding: 14px; }
+    .gauge { grid-template-columns: 1fr; text-align: left; }
+    .picks { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 44px 1fr 64px 22px; }
+    .row .how { grid-column: 1 / -1; }
+    .more { padding-left: 6px; }
+    .rp { grid-template-columns: 1fr 48px; } .rp .lbl { grid-column: 1 / -1; }
+    .steps { grid-template-columns: 1fr; }
+    section { padding-top: 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#play">Last Over <b>Lab</b></a>
+    <nav aria-label="Sections">
+      <a href="#play">Play the chase</a>
+      <a href="#draft">Draft game</a>
+      <a href="#rankings">Rankings</a>
+      <a href="#skill-or-luck">Skill or luck</a>
+      <a href="#method">Method</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section id="play">
+  <div class="wrap">
+    <h1>Twelve to win. Six balls left. Who do you trust?</h1>
+    <p class="lede">Set any chase on the scoreboard, then bowl it ball by ball. The win chance and the pressure reading come from a model trained on <span id="mMatches"></span> IPL and T20 International matches.</p>
+
+    <div class="board">
+      <div>
+        <div class="dials">
+          <div class="dial"><div class="what">Runs needed</div><div class="num" id="nR">12</div>
+            <div class="step"><button data-k="r" data-d="-1" aria-label="One run fewer">−</button><button data-k="r" data-d="1" aria-label="One run more">+</button></div></div>
+          <div class="dial"><div class="what">Balls left</div><div class="num" id="nB">6</div>
+            <div class="step"><button data-k="b" data-d="-1" aria-label="One ball fewer">−</button><button data-k="b" data-d="1" aria-label="One ball more">+</button></div></div>
+          <div class="dial"><div class="what">Wickets in hand</div><div class="num" id="nW">5</div>
+            <div class="step"><button data-k="w" data-d="-1" aria-label="One wicket fewer">−</button><button data-k="w" data-d="1" aria-label="One wicket more">+</button></div></div>
+        </div>
+        <div class="presets"><span>Try a chase:</span>
+          <button class="chip" data-p="12,6,5">12 off 6</button>
+          <button class="chip" data-p="8,1,2">8 off 1</button>
+          <button class="chip" data-p="30,18,6">30 off 18</button>
+          <button class="chip" data-p="60,36,7">60 off 36</button>
+          <button class="chip" data-p="5,30,8">5 off 30</button>
+          <button class="chip" data-p="185,120,10">185 from ball one</button>
+        </div>
+        <div class="balls">
+          <p>Bowl the next ball</p>
+          <div class="ballrow" id="ballrow">
+            <button class="ball" data-o="0" aria-label="Dot ball">0</button>
+            <button class="ball" data-o="1" aria-label="One run">1</button>
+            <button class="ball" data-o="2" aria-label="Two runs">2</button>
+            <button class="ball" data-o="4" aria-label="Four">4</button>
+            <button class="ball" data-o="6" aria-label="Six">6</button>
+            <button class="ball out" data-o="W" aria-label="Wicket">W</button>
+          </div>
+          <div class="log" id="log" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="read">
+        <div class="tug">
+          <div class="ends"><span>Chasing side <b id="wpBat">50%</b></span><span><b id="wpBowl">50%</b> Bowling side</span></div>
+          <div class="rope" role="img" aria-label="Win chance"><i id="rope"></i></div>
+        </div>
+        <div class="gauge">
+          <svg viewBox="0 0 170 100" aria-hidden="true">
+            <path d="M15 88 A70 70 0 0 1 155 88" fill="none" stroke="#17245a" stroke-width="14" stroke-linecap="round"/>
+            <path d="M15 88 A70 70 0 0 1 50 27.4" fill="none" stroke="#1F9D68" stroke-width="14" stroke-linecap="round"/>
+            <path d="M50 27.4 A70 70 0 0 1 120 27.4" fill="none" stroke="#FFB627" stroke-width="14"/>
+            <path d="M120 27.4 A70 70 0 0 1 155 88" fill="none" stroke="#C2263C" stroke-width="14" stroke-linecap="round"/>
+            <g class="needle" id="needle"><line x1="85" y1="88" x2="85" y2="26" stroke="#EAF0FB" stroke-width="4" stroke-linecap="round"/></g>
+            <circle cx="85" cy="88" r="8" fill="#EAF0FB"/>
+          </svg>
+          <div><h3 id="pWord">Knife edge</h3><p id="pLine"></p></div>
+        </div>
+        <p class="verdict" id="verdict"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="draft">
+  <div class="wrap">
+    <h2>Draft game: beat the model</h2>
+    <p class="sub">Eight match situations. Each time, three players from our top 30. Send in the one our rating backs most for that exact situation.</p>
+    <div class="gamebar">
+      <div class="stat"><b id="gRound">1</b>of 8</div>
+      <div class="stat"><b id="gScore">0</b>points</div>
+      <div class="stat"><b id="gStreak">0</b>in a row</div>
+      <div class="stat quiet" id="gBest"></div>
+    </div>
+    <div id="game"></div>
+  </div>
+</section>
+
+<section id="rankings">
+  <div class="wrap">
+    <h2>The pressure rankings</h2>
+    <p class="sub">Every eligible player in the data, rated only on balls that fall in a pressure situation and compared with what an average player does in the same match state. Open a row to see how he gets there.</p>
+    <div class="tabs" role="tablist" aria-label="Discipline">
+      <button role="tab" aria-selected="true" data-tab="bat">Batters</button>
+      <button role="tab" aria-selected="false" data-tab="bowl">Bowlers</button>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div class="sheet" id="sheet"></div>
+    <button class="chip showall" id="showAll">Show the top 30</button>
+    <p class="key" id="key"></p>
+  </div>
+</section>
+
+<section id="skill-or-luck">
+  <div class="wrap">
+    <h2>Skill or luck?</h2>
+    <p class="sub">We measured each stat on pressure balls in earlier seasons, then again the next season. A long green bar means the number carries over, so it is skill. A short red one means last year tells you almost nothing about this year.</p>
+    <div class="tabs" role="tablist" aria-label="Discipline for skill or luck">
+      <button role="tab" aria-selected="true" data-rep="bat">Batters</button>
+      <button role="tab" aria-selected="false" data-rep="bowl">Bowlers</button>
+    </div>
+    <div class="repeat" id="repeat"></div>
+    <p class="key">Bars show the correlation between a player's earlier seasons and his next season, from 0 (pure luck) to 1 (never changes). The hatched zone marks where a stat is mostly noise.</p>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <h2>How the rating is built</h2>
+    <p class="sub">Cricket decides what pressure is. The models do the measuring.</p>
+    <ol class="steps">
+      <li><h3>Rebuild the match</h3><p>The data has no running score, so we add up every ball to get runs, wickets, balls left, target and required rate at each delivery.</p></li>
+      <li><h3>Name the pressure situations</h3><p>Collapse, chase start, big chase and finish for batters. Death overs, a set batter, a small total and the ball after a boundary for bowlers. A win-probability model only decides whether the match is still open.</p></li>
+      <li><h3>Compare with an average player</h3><p>For every ball, models predict the runs and the wicket chance an average player would produce in that state. A player's value is what he did minus that.</p></li>
+      <li><h3>Trust what repeats</h3><p>We split the matches in half many times to measure how much of each number is real. Thin samples get pulled toward the average, and players are ranked on a cautious estimate.</p></li>
+    </ol>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Fan-made project for SupeRR Selector Season 2. Not an official Rajasthan Royals or Unstop page.</p>
+  </div>
+</footer>
+
+<script>
+const DATA = {"batters":[{"name":"Suryakumar Yadav","rank":1,"role":"batter","level":22.2,"sd":5.6,"balls":723,"sr":170.4,"avg":45.6,"bnd":25.6,"dot":32.2,"pieces":{"boundary":20.1,"rotation":-3.6,"wicket":16.0},"sit":{"Collapse":28.5,"Big chase":25.9,"Finish":22.3,"Chase start":31.5}},{"name":"Heinrich Klaasen","rank":2,"role":"batter","level":19.7,"sd":5.8,"balls":513,"sr":155.2,"avg":33.2,"bnd":20.1,"dot":28.7,"pieces":{"boundary":9.3,"rotation":3.9,"wicket":17.9},"sit":{"Collapse":26.8,"Big chase":27.2,"Finish":20.7,"Chase start":null}},{"name":"Tim David","rank":3,"role":"batter","level":18.2,"sd":6.5,"balls":516,"sr":189.5,"avg":37.6,"bnd":27.1,"dot":31.0,"pieces":{"boundary":18.2,"rotation":-4.6,"wicket":12.6},"sit":{"Collapse":24.0,"Big chase":22.7,"Finish":19.2,"Chase start":null}},{"name":"Sai Sudharsan","rank":4,"role":"batter","level":17.1,"sd":5.7,"balls":355,"sr":152.1,"avg":38.6,"bnd":22.3,"dot":32.4,"pieces":{"boundary":-12.9,"rotation":6.0,"wicket":27.3},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":29.1}},{"name":"Lokesh Rahul","rank":5,"role":"batter","level":15.3,"sd":5.8,"balls":509,"sr":150.3,"avg":33.3,"bnd":20.6,"dot":30.8,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":23.6,"Big chase":21.7,"Finish":16.8,"Chase start":26.4}},{"name":"Virat Kohli","rank":6,"role":"batter","level":14.8,"sd":5.5,"balls":414,"sr":164.5,"avg":48.6,"bnd":23.9,"dot":28.5,"pieces":{"boundary":-8.9,"rotation":8.8,"wicket":23.9},"sit":{"Collapse":23.7,"Big chase":null,"Finish":15.8,"Chase start":25.4}},{"name":"Andre Russell","rank":7,"role":"batter","level":16.7,"sd":7.2,"balls":304,"sr":188.8,"avg":33.8,"bnd":29.9,"dot":38.5,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":26.4,"Big chase":22.3,"Finish":18.0,"Chase start":null}},{"name":"Pathum Nissanka","rank":8,"role":"batter","level":15.7,"sd":6.5,"balls":342,"sr":151.2,"avg":39.8,"bnd":22.2,"dot":35.4,"pieces":{"boundary":6.1,"rotation":5.0,"wicket":14.2},"sit":{"Collapse":21.8,"Big chase":null,"Finish":null,"Chase start":25.6}},{"name":"Namboori Tilak Varma","rank":9,"role":"batter","level":14.0,"sd":5.3,"balls":883,"sr":140.7,"avg":46.0,"bnd":17.8,"dot":33.5,"pieces":{"boundary":-6.4,"rotation":2.9,"wicket":21.1},"sit":{"Collapse":18.7,"Big chase":18.9,"Finish":15.3,"Chase start":null}},{"name":"Nicholas Pooran","rank":10,"role":"batter","level":15.0,"sd":6.2,"balls":637,"sr":162.3,"avg":34.5,"bnd":23.4,"dot":35.6,"pieces":{"boundary":16.2,"rotation":-6.1,"wicket":9.5},"sit":{"Collapse":20.1,"Big chase":20.0,"Finish":15.8,"Chase start":26.6}},{"name":"Reeza Hendricks","rank":11,"role":"batter","level":16.0,"sd":7.0,"balls":261,"sr":171.6,"avg":49.8,"bnd":26.4,"dot":30.7,"pieces":{"boundary":-2.2,"rotation":5.9,"wicket":17.5},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":26.5}},{"name":"Phil Salt","rank":12,"role":"batter","level":14.8,"sd":6.8,"balls":279,"sr":178.1,"avg":55.2,"bnd":27.6,"dot":34.4,"pieces":{"boundary":12.4,"rotation":1.6,"wicket":8.2},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":26.7}},{"name":"Vaibhav Sooryavanshi","rank":13,"role":"batter","level":15.5,"sd":7.7,"balls":165,"sr":222.4,"avg":40.8,"bnd":39.4,"dot":42.4,"pieces":{"boundary":30.9,"rotation":-10.1,"wicket":6.5},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":27.5}},{"name":"Abhishek Sharma","rank":14,"role":"batter","level":14.1,"sd":6.8,"balls":407,"sr":184.0,"avg":31.2,"bnd":30.7,"dot":35.4,"pieces":{"boundary":24.3,"rotation":-1.2,"wicket":0.6},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":25.9}},{"name":"Jos Buttler","rank":15,"role":"batter","level":12.8,"sd":6.0,"balls":511,"sr":180.2,"avg":27.9,"bnd":28.2,"dot":31.3,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":null,"Big chase":19.5,"Finish":14.8,"Chase start":24.8}},{"name":"Shubman Gill","rank":16,"role":"batter","level":13.0,"sd":6.1,"balls":429,"sr":168.1,"avg":37.9,"bnd":23.5,"dot":26.8,"pieces":{"boundary":-7.0,"rotation":6.8,"wicket":16.6},"sit":{"Collapse":null,"Big chase":19.8,"Finish":14.4,"Chase start":24.1}},{"name":"Shivam Dube","rank":17,"role":"batter","level":12.4,"sd":6.0,"balls":502,"sr":152.2,"avg":31.8,"bnd":19.9,"dot":32.1,"pieces":{"boundary":-1.8,"rotation":-3.5,"wicket":14.5},"sit":{"Collapse":19.2,"Big chase":16.9,"Finish":14.7,"Chase start":null}},{"name":"Shashank Singh","rank":18,"role":"batter","level":13.7,"sd":7.1,"balls":208,"sr":185.6,"avg":96.5,"bnd":24.0,"dot":26.0,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":null,"Big chase":20.0,"Finish":15.2,"Chase start":null}},{"name":"Ryan Burl","rank":19,"role":"batter","level":12.8,"sd":6.8,"balls":325,"sr":117.2,"avg":25.4,"bnd":13.5,"dot":41.8,"pieces":{"boundary":1.6,"rotation":-0.6,"wicket":13.9},"sit":{"Collapse":19.8,"Big chase":null,"Finish":13.9,"Chase start":null}},{"name":"Glenn Phillips","rank":20,"role":"batter","level":12.7,"sd":6.7,"balls":296,"sr":149.0,"avg":23.2,"bnd":17.6,"dot":30.4,"pieces":{"boundary":-2.5,"rotation":3.3,"wicket":16.7},"sit":{"Collapse":19.3,"Big chase":null,"Finish":14.5,"Chase start":null}},{"name":"Rinku Singh","rank":21,"role":"batter","level":11.8,"sd":6.2,"balls":581,"sr":153.5,"avg":31.9,"bnd":21.2,"dot":33.4,"pieces":{"boundary":3.0,"rotation":-0.6,"wicket":17.7},"sit":{"Collapse":18.6,"Big chase":18.4,"Finish":13.6,"Chase start":null}},{"name":"Shreyas Iyer","rank":22,"role":"batter","level":11.8,"sd":6.4,"balls":448,"sr":172.5,"avg":33.6,"bnd":23.7,"dot":27.5,"pieces":{"boundary":-2.5,"rotation":4.0,"wicket":13.3},"sit":{"Collapse":16.3,"Big chase":20.3,"Finish":13.3,"Chase start":23.1}},{"name":"Tristan Stubbs","rank":23,"role":"batter","level":11.8,"sd":6.4,"balls":505,"sr":153.3,"avg":40.7,"bnd":18.6,"dot":26.5,"pieces":{"boundary":-16.6,"rotation":9.1,"wicket":16.2},"sit":{"Collapse":17.1,"Big chase":17.2,"Finish":14.1,"Chase start":null}},{"name":"Cameron Green","rank":24,"role":"all-rounder","level":11.8,"sd":6.5,"balls":393,"sr":149.4,"avg":36.7,"bnd":19.8,"dot":32.3,"pieces":{"boundary":-0.5,"rotation":4.1,"wicket":13.1},"sit":{"Collapse":18.4,"Big chase":null,"Finish":14.0,"Chase start":23.8}},{"name":"Ibrahim Zadran","rank":25,"role":"batter","level":11.7,"sd":6.5,"balls":217,"sr":131.3,"avg":25.9,"bnd":17.1,"dot":35.5,"pieces":{"boundary":-13.8,"rotation":3.8,"wicket":23.3},"sit":{"Collapse":18.8,"Big chase":null,"Finish":13.7,"Chase start":null}},{"name":"Ashutosh Sharma","rank":26,"role":"batter","level":12.3,"sd":7.3,"balls":169,"sr":175.7,"avg":29.7,"bnd":25.4,"dot":29.0,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":null,"Big chase":null,"Finish":13.6,"Chase start":null}},{"name":"Romario Shepherd","rank":27,"role":"all-rounder","level":12.0,"sd":7.0,"balls":261,"sr":177.0,"avg":30.8,"bnd":25.3,"dot":34.5,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":null,"Big chase":null,"Finish":13.7,"Chase start":null}},{"name":"Mahendra Singh Dhoni","rank":28,"role":"batter","level":12.1,"sd":7.1,"balls":202,"sr":168.8,"avg":22.7,"bnd":23.3,"dot":32.7,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Collapse":null,"Big chase":null,"Finish":14.3,"Chase start":null}},{"name":"David Miller","rank":29,"role":"batter","level":10.8,"sd":6.3,"balls":654,"sr":149.8,"avg":37.7,"bnd":18.8,"dot":31.8,"pieces":{"boundary":-5.2,"rotation":1.3,"wicket":19.0},"sit":{"Collapse":17.6,"Big chase":17.6,"Finish":12.1,"Chase start":null}},{"name":"Yashasvi Jaiswal","rank":30,"role":"batter","level":10.9,"sd":6.4,"balls":357,"sr":180.7,"avg":37.9,"bnd":33.3,"dot":39.8,"pieces":{"boundary":12.5,"rotation":-2.5,"wicket":10.4},"sit":{"Collapse":null,"Big chase":null,"Finish":null,"Chase start":22.6}}],"bat_avg":{"sr":144.8,"avg":23.4,"bnd":19.6,"dot":36.3},"bowlers":[{"name":"Jasprit Bumrah","rank":1,"role":"bowler","level":7.6,"sd":5.7,"balls":657,"econ":7.0,"bpw":18.8,"wk":34,"dot":39.7,"bnd":12.5,"pieces":{"boundary":24.4,"rotation":1.2,"wicket":-8.1},"sit":{"Death":11.8,"Set batter":0.8,"Small total":-11.9,"Bounce-back":-1.5}},{"name":"Varun Chakravarthy","rank":2,"role":"bowler","level":6.3,"sd":5.5,"balls":702,"econ":9.7,"bpw":15.6,"wk":43,"dot":30.6,"bnd":19.7,"pieces":{"boundary":2.2,"rotation":4.6,"wicket":1.6},"sit":{"Death":8.1,"Set batter":1.2,"Small total":-1.3,"Bounce-back":-3.8}},{"name":"Wanindu Hasaranga","rank":3,"role":"all-rounder","level":5.5,"sd":5.6,"balls":728,"econ":8.4,"bpw":12.6,"wk":57,"dot":30.6,"bnd":15.1,"pieces":{"boundary":-1.0,"rotation":2.7,"wicket":3.4},"sit":{"Death":9.6,"Set batter":0.3,"Small total":-1.2,"Bounce-back":-4.5}},{"name":"Sunil Narine","rank":4,"role":"all-rounder","level":5.0,"sd":5.2,"balls":535,"econ":7.4,"bpw":18.1,"wk":29,"dot":34.8,"bnd":12.3,"pieces":{"boundary":19.4,"rotation":1.3,"wicket":-10.2},"sit":{"Death":8.7,"Set batter":-0.3,"Small total":8.7,"Bounce-back":-5.7}},{"name":"Matheesha Pathirana","rank":5,"role":"bowler","level":5.1,"sd":5.8,"balls":522,"econ":9.4,"bpw":11.9,"wk":39,"dot":31.4,"bnd":15.3,"pieces":{"boundary":17.8,"rotation":-1.5,"wicket":-3.8},"sit":{"Death":9.3,"Set batter":-0.5,"Small total":null,"Bounce-back":-5.4}},{"name":"Nathan Ellis","rank":6,"role":"bowler","level":4.2,"sd":5.9,"balls":426,"econ":8.4,"bpw":15.7,"wk":26,"dot":34.0,"bnd":16.4,"pieces":{"boundary":16.8,"rotation":-0.8,"wicket":-4.9},"sit":{"Death":8.2,"Set batter":-0.8,"Small total":null,"Bounce-back":-5.8}},{"name":"Kuldeep Yadav","rank":7,"role":"bowler","level":3.4,"sd":5.4,"balls":893,"econ":8.8,"bpw":20.1,"wk":43,"dot":28.7,"bnd":15.5,"pieces":{"boundary":5.3,"rotation":2.3,"wicket":-0.4},"sit":{"Death":8.1,"Set batter":-2.1,"Small total":-2.7,"Bounce-back":-6.1}},{"name":"Josh Hazlewood","rank":8,"role":"bowler","level":4.1,"sd":6.1,"balls":469,"econ":9.2,"bpw":14.1,"wk":32,"dot":35.8,"bnd":20.5,"pieces":{"boundary":3.1,"rotation":5.5,"wicket":-0.4},"sit":{"Death":8.2,"Set batter":-2.1,"Small total":null,"Bounce-back":-4.3}},{"name":"Rashid Khan","rank":9,"role":"bowler","level":2.6,"sd":5.0,"balls":1037,"econ":8.1,"bpw":17.4,"wk":59,"dot":31.3,"bnd":14.5,"pieces":{"boundary":7.7,"rotation":1.2,"wicket":-4.2},"sit":{"Death":6.3,"Set batter":-2.6,"Small total":-3.5,"Bounce-back":-7.5}},{"name":"Arshdeep Singh","rank":10,"role":"bowler","level":1.7,"sd":5.0,"balls":1249,"econ":9.9,"bpw":14.4,"wk":80,"dot":31.9,"bnd":21.2,"pieces":{"boundary":6.3,"rotation":0.3,"wicket":-3.4},"sit":{"Death":5.3,"Set batter":-4.0,"Small total":-5.8,"Bounce-back":-8.4}},{"name":"Bhuvneshwar Kumar","rank":11,"role":"bowler","level":2.3,"sd":5.7,"balls":795,"econ":9.2,"bpw":16.3,"wk":46,"dot":31.2,"bnd":18.0,"pieces":{"boundary":10.6,"rotation":0.3,"wicket":-3.1},"sit":{"Death":7.6,"Set batter":-8.2,"Small total":-4.5,"Bounce-back":-7.1}},{"name":"Blessing Muzarabani","rank":12,"role":"bowler","level":2.5,"sd":6.1,"balls":392,"econ":7.8,"bpw":18.1,"wk":21,"dot":39.8,"bnd":15.8,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":7.5,"Set batter":null,"Small total":-1.7,"Bounce-back":-6.2}},{"name":"Shaheen Afridi","rank":13,"role":"bowler","level":1.9,"sd":6.3,"balls":378,"econ":8.6,"bpw":13.0,"wk":28,"dot":41.3,"bnd":20.6,"pieces":{"boundary":6.7,"rotation":0.9,"wicket":-2.9},"sit":{"Death":7.3,"Set batter":-4.2,"Small total":-4.2,"Bounce-back":-7.5}},{"name":"Jason Holder","rank":14,"role":"all-rounder","level":0.4,"sd":5.2,"balls":823,"econ":9.4,"bpw":16.2,"wk":48,"dot":29.5,"bnd":18.2,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":3.7,"Set batter":-3.5,"Small total":-6.3,"Bounce-back":-9.8}},{"name":"Mustafizur Rahman","rank":15,"role":"bowler","level":0.5,"sd":5.5,"balls":737,"econ":9.0,"bpw":15.4,"wk":45,"dot":32.8,"bnd":17.2,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":4.8,"Set batter":-4.7,"Small total":-5.5,"Bounce-back":-8.6}},{"name":"Kagiso Rabada","rank":16,"role":"bowler","level":0.8,"sd":5.8,"balls":618,"econ":9.8,"bpw":15.1,"wk":39,"dot":36.7,"bnd":23.0,"pieces":{"boundary":-1.1,"rotation":4.4,"wicket":-0.8},"sit":{"Death":5.7,"Set batter":-4.3,"Small total":-4.7,"Bounce-back":-7.7}},{"name":"Haris Rauf","rank":17,"role":"bowler","level":1.2,"sd":6.3,"balls":440,"econ":9.3,"bpw":13.1,"wk":32,"dot":36.1,"bnd":19.3,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":7.4,"Set batter":-4.2,"Small total":-4.5,"Bounce-back":-8.0}},{"name":"Mujeeb Ur Rahman","rank":18,"role":"bowler","level":0.8,"sd":6.2,"balls":239,"econ":6.2,"bpw":16.7,"wk":14,"dot":41.8,"bnd":10.0,"pieces":{"boundary":6.7,"rotation":1.0,"wicket":-4.0},"sit":{"Death":null,"Set batter":-3.7,"Small total":-6.8,"Bounce-back":-9.9}},{"name":"Abbas Afridi","rank":19,"role":"bowler","level":1.3,"sd":6.6,"balls":204,"econ":8.7,"bpw":10.9,"wk":18,"dot":33.8,"bnd":16.2,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":6.8,"Set batter":-3.0,"Small total":null,"Bounce-back":null}},{"name":"Jofra Archer","rank":20,"role":"bowler","level":0.3,"sd":6.0,"balls":428,"econ":9.4,"bpw":15.1,"wk":27,"dot":36.7,"bnd":21.5,"pieces":{"boundary":2.1,"rotation":2.6,"wicket":-3.4},"sit":{"Death":3.8,"Set batter":null,"Small total":-5.0,"Bounce-back":-9.2}},{"name":"Krunal Pandya","rank":21,"role":"all-rounder","level":-0.1,"sd":5.9,"balls":462,"econ":9.0,"bpw":18.7,"wk":24,"dot":26.2,"bnd":16.9,"pieces":{"boundary":11.4,"rotation":-0.6,"wicket":-5.8},"sit":{"Death":null,"Set batter":-5.1,"Small total":null,"Bounce-back":-12.7}},{"name":"Sai Kishore","rank":22,"role":"bowler","level":0.3,"sd":6.3,"balls":231,"econ":9.5,"bpw":12.4,"wk":18,"dot":26.8,"bnd":18.2,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":null,"Set batter":-4.0,"Small total":null,"Bounce-back":null}},{"name":"Lockie Ferguson","rank":23,"role":"bowler","level":0.2,"sd":6.2,"balls":393,"econ":10.1,"bpw":16.8,"wk":22,"dot":35.4,"bnd":23.2,"pieces":{"boundary":3.5,"rotation":3.3,"wicket":-5.6},"sit":{"Death":4.7,"Set batter":-5.2,"Small total":null,"Bounce-back":-9.2}},{"name":"Noor Ahmad","rank":24,"role":"bowler","level":-0.4,"sd":5.9,"balls":529,"econ":8.5,"bpw":14.1,"wk":36,"dot":33.1,"bnd":15.1,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":4.4,"Set batter":-4.3,"Small total":-6.8,"Bounce-back":-9.1}},{"name":"Jacob Duffy","rank":25,"role":"bowler","level":0.2,"sd":6.5,"balls":188,"econ":9.7,"bpw":14.7,"wk":12,"dot":35.6,"bnd":22.3,"pieces":{"boundary":1.6,"rotation":3.2,"wicket":-1.2},"sit":{"Death":5.3,"Set batter":null,"Small total":null,"Bounce-back":-8.3}},{"name":"Akeal Hosein","rank":26,"role":"bowler","level":-0.9,"sd":5.8,"balls":464,"econ":8.5,"bpw":17.5,"wk":26,"dot":34.5,"bnd":17.5,"pieces":{"boundary":9.1,"rotation":0.8,"wicket":-7.5},"sit":{"Death":null,"Set batter":-5.3,"Small total":null,"Bounce-back":-10.3}},{"name":"Mahedi Hasan","rank":27,"role":"all-rounder","level":-0.1,"sd":6.5,"balls":274,"econ":7.1,"bpw":15.6,"wk":17,"dot":44.2,"bnd":14.2,"pieces":{"boundary":-0.1,"rotation":3.6,"wicket":-2.7},"sit":{"Death":null,"Set batter":-5.1,"Small total":-5.7,"Bounce-back":-8.7}},{"name":"Mohsin Khan","rank":28,"role":"bowler","level":-0.4,"sd":6.4,"balls":273,"econ":9.1,"bpw":16.6,"wk":16,"dot":38.8,"bnd":20.1,"pieces":{"boundary":6.1,"rotation":1.8,"wicket":-3.9},"sit":{"Death":4.4,"Set batter":-5.5,"Small total":null,"Bounce-back":-10.3}},{"name":"Jamie Overton","rank":29,"role":"bowler","level":-0.4,"sd":6.6,"balls":152,"econ":8.8,"bpw":10.4,"wk":14,"dot":33.6,"bnd":15.1,"pieces":{"boundary":null,"rotation":null,"wicket":null},"sit":{"Death":3.8,"Set batter":null,"Small total":null,"Bounce-back":null}},{"name":"Lungi Ngidi","rank":30,"role":"bowler","level":-1.0,"sd":6.1,"balls":314,"econ":8.8,"bpw":14.6,"wk":21,"dot":34.4,"bnd":18.2,"pieces":{"boundary":7.4,"rotation":1.0,"wicket":-5.7},"sit":{"Death":5.3,"Set batter":-6.3,"Small total":null,"Bounce-back":-10.6}}],"bowl_avg":{"econ":9.5,"bpw":17.3,"dot":30.8,"bnd":19.4},"repeat":[{"role":"bat","stat":"boundary %","r":0.42},{"role":"bat","stat":"six %","r":0.3},{"role":"bat","stat":"attacking-shot %","r":0.24},{"role":"bat","stat":"strike rate","r":0.28},{"role":"bat","stat":"dot-ball %","r":0.33},{"role":"bat","stat":"dismissal %","r":0.13},{"role":"bowl","stat":"slower-ball / cutter % (pace)","r":0.74},{"role":"bowl","stat":"dot-ball %","r":0.35},{"role":"bowl","stat":"boundary conceded %","r":0.34},{"role":"bowl","stat":"wides + no-balls %","r":0.51},{"role":"bowl","stat":"yorker % (pace)","r":0.5},{"role":"bowl","stat":"economy","r":0.22},{"role":"bowl","stat":"wicket %","r":0.09}],"wp":{"mean":[102.61231,64.54515,7.28383,10.61229,4.40123,15.23261,7.6872],"scale":[54.93976,33.12511,2.29188,5.68377,2.96451,10.8002,2.33497],"coef":[0.35965,0.3565,0.60861,-1.99345,-0.26238,-2.47967,-0.32722],"intercept":-0.82115},"meta":{"matches":818,"balls":195124,"bat_eligible":123,"bowl_eligible":135,"pressure_cut":0.137}};
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const SHORT = { "Lokesh Rahul": "KL Rahul", "Namboori Tilak Varma": "Tilak Varma" };
+const nm = n => SHORT[n] || n;
+const signed = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
+
+/* ---------- win probability: the chase model from the pipeline, run in the browser ---------- */
+function winChance(r, b, w) {
+  if (r <= 0) return 1;
+  if (b <= 0 || w <= 0) return 0;
+  const f = [r, b, w, Math.min(r / Math.max(b, 1) * 6, 36), w * b / 120, r / Math.max(w, 1), Math.sqrt(Math.max(b, 0))];
+  let z = DATA.wp.intercept;
+  for (let i = 0; i < f.length; i++) z += DATA.wp.coef[i] * (f[i] - DATA.wp.mean[i]) / DATA.wp.scale[i];
+  return 1 / (1 + Math.exp(-z));
+}
+const pressure = (r, b, w) => Math.max(0, winChance(r - 6, b - 1, w) - winChance(r, b - 1, w - 1));
+
+function burst(el, n = 26) {
+  const r = el.getBoundingClientRect(), box = document.createElement("div"); box.className = "burst";
+  box.style.left = r.left + r.width / 2 + "px"; box.style.top = r.top + r.height / 2 + "px";
+  const cols = ["#FFB627", "#1F9D68", "#EAF0FB", "#C2263C"];
+  for (let i = 0; i < n; i++) { const p = document.createElement("i"), a = Math.random() * 6.28, d = 80 + Math.random() * 160;
+    p.style.background = cols[i % 4]; p.style.setProperty("--x", Math.cos(a) * d + "px"); p.style.setProperty("--y", Math.sin(a) * d - 60 + "px"); box.appendChild(p); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 1000);
+}
+/* ---------- hero scoreboard ---------- */
+const S = { r: 12, b: 6, w: 5, over: false };
+function paint() {
+  $("#nR").textContent = Math.max(S.r, 0); $("#nB").textContent = S.b; $("#nW").textContent = S.w;
+  const p = winChance(S.r, S.b, S.w), pr = S.over ? 0 : pressure(S.r, S.b, S.w);
+  const pct = Math.round(p * 100);
+  $("#wpBat").textContent = pct + "%"; $("#wpBowl").textContent = (100 - pct) + "%";
+  $("#rope").style.width = Math.max(2, pct) + "%";
+  const scaled = Math.min(pr / 0.6, 1);
+  $("#needle").style.transform = `rotate(${-90 + scaled * 180}deg)`;
+  let word, line;
+  if (S.over) { word = S.r <= 0 ? "Chase done" : "Defended"; line = "The match is over. Pick a new chase or reset the dials."; }
+  else if (pr < 0.05) { word = "Dead ball"; line = "Nothing this ball can do will change who wins."; }
+  else if (pr < DATA.meta.pressure_cut) { word = "Simmering"; line = "The result can move, but not by much on one ball."; }
+  else if (pr < 0.3) { word = "Game on"; line = "This ball is in the top quarter of all balls for how much it matters."; }
+  else { word = "Knife edge"; line = "A six and a wicket lead to very different matches from here."; }
+  $("#pWord").textContent = word; $("#pLine").textContent = line;
+  const six = winChance(S.r - 6, S.b - 1, S.w), wk = winChance(S.r, S.b - 1, S.w - 1);
+  $("#verdict").innerHTML = S.over ? "" :
+    `Hit a six and the chasing side is at <strong>${Math.round(six * 100)}%</strong>. Lose a wicket and it is <strong>${Math.round(wk * 100)}%</strong>. That gap of <strong>${Math.round(pr * 100)} points</strong> is the pressure on this ball.`;
+  $$("#ballrow .ball").forEach(x => x.disabled = S.over);
+  const bd = $(".board"); bd.classList.toggle("won", S.over && S.r <= 0); bd.classList.toggle("lost", S.over && S.r > 0);
+}
+function setChase(r, b, w) { S.r = r; S.b = b; S.w = w; S.over = false; $("#log").innerHTML = ""; paint(); }
+$$(".step button").forEach(btn => btn.addEventListener("click", () => {
+  const k = btn.dataset.k, d = +btn.dataset.d, lim = { r: [1, 300], b: [1, 120], w: [1, 10] }[k];
+  S[k] = Math.min(lim[1], Math.max(lim[0], (S.over ? { r: 12, b: 6, w: 5 }[k] : S[k]) + d));
+  S.over = false; $("#log").innerHTML = ""; paint();
+}));
+$$(".presets .chip").forEach(c => c.addEventListener("click", () => setChase(...c.dataset.p.split(",").map(Number))));
+$$("#ballrow .ball").forEach(btn => btn.addEventListener("click", () => {
+  if (S.over) return;
+  const before = winChance(S.r, S.b, S.w), o = btn.dataset.o;
+  if (o === "W") S.w -= 1; else S.r -= +o;
+  S.b -= 1;
+  if (S.r <= 0 || S.b <= 0 || S.w <= 0) S.over = true;
+  const swing = Math.round((winChance(S.r, S.b, S.w) - before) * 100);
+  const tag = document.createElement("span");
+  tag.className = swing >= 0 ? "up" : "down";
+  tag.textContent = `${o}  ${swing >= 0 ? "+" : "−"}${Math.abs(swing)}%`;
+  $("#log").appendChild(tag);
+  paint();
+  ["#nR", "#nB", "#nW"].forEach(q => { const e = $(q); e.classList.remove("bump"); void e.offsetWidth; e.classList.add("bump"); });
+  if (o === "6" || o === "4") burst(btn, o === "6" ? 22 : 12);
+  if (S.over && S.r <= 0) burst($("#wpBat"), 60);
+}));
+
+/* ---------- draft game ---------- */
+const SCENES = {
+  bat: { "Collapse": ["Three down inside ten overs.", "You need someone to rebuild without stalling."],
+         "Chase start": ["Chasing 180 or more, powerplay just begun.", "You need a fast start that does not cost wickets."],
+         "Big chase": ["Required rate above 10 with under ten overs left.", "You need the rate brought down."],
+         "Finish": ["Overs 17 to 20, match in the balance.", "You need a finisher."] },
+  bowl: { "Death": ["Overs 17 to 20, match in the balance.", "You need someone to close it out with the ball."],
+          "Set batter": ["Middle overs, and a batter has faced 20 balls or a stand has passed 40.", "You need the partnership slowed."],
+          "Small total": ["Defending 155 or fewer.", "You need every over to squeeze."],
+          "Bounce-back": ["The last ball went for a boundary.", "You need a bowler who answers straight away."] }
+};
+const G = { round: 0, score: 0, streak: 0, cur: null, locked: false };
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
+function deal() {
+  for (let tries = 0; tries < 200; tries++) {
+    const role = Math.random() < 0.5 ? "bat" : "bowl", sit = shuffle(Object.keys(SCENES[role]))[0];
+    const pool = (role === "bat" ? DATA.batters : DATA.bowlers).filter(p => p.sit[sit] !== null);
+    const three = shuffle(pool).slice(0, 3).sort((a, b) => b.sit[sit] - a.sit[sit]);
+    if (three.length === 3 && three[0].sit[sit] - three[1].sit[sit] >= 1.5) return { role, sit, three: shuffle(three), best: three[0].name };
+  }
+  return null;
+}
+function bestScore() { try { return +localStorage.getItem("lol-best") || 0; } catch (e) { return 0; } }
+function drawGame() {
+  $("#gRound").textContent = Math.min(G.round + 1, 8); $("#gScore").textContent = G.score; $("#gStreak").textContent = G.streak;
+  const best = bestScore(); $("#gBest").textContent = best ? `Your best: ${best}` : "";
+  const box = $("#game");
+  if (G.round >= 8) {
+    const grade = G.score >= 900 ? "Head of strategy" : G.score >= 650 ? "Auction table regular" : G.score >= 400 ? "Promising scout" : "Net bowler";
+    try { if (G.score > best) localStorage.setItem("lol-best", G.score); } catch (e) {}
+    box.innerHTML = `<div class="final"><h3>${grade}</h3><p>You scored ${G.score} points over eight situations. Close calls are hard even for the model: ranks a few places apart are inside its margin of error.</p><button class="go" id="again">Play again</button></div>`;
+    $("#again").addEventListener("click", () => { G.round = 0; G.score = 0; G.streak = 0; G.cur = deal(); drawGame(); });
+    return;
+  }
+  const c = G.cur, sc = SCENES[c.role][c.sit];
+  box.innerHTML = `<div class="brief">${sc[0]}<small>${sc[1]} Pick a ${c.role === "bat" ? "batter" : "bowler"}.</small></div>
+    <div class="picks">${c.three.map(p => `<button class="pick" data-n="${p.name}"><span class="nm">${nm(p.name)}</span><span class="rl">${p.role}, overall rank ${p.rank}</span><span class="val">${signed(p.sit[c.sit])}</span></button>`).join("")}</div>
+    <div class="after" id="after" aria-live="polite"></div>`;
+  G.locked = false;
+  $$(".pick", box).forEach(btn => btn.addEventListener("click", () => {
+    if (G.locked) return; G.locked = true;
+    const right = btn.dataset.n === c.best;
+    $$(".pick", box).forEach(b => { b.classList.add("shown"); b.disabled = true; if (b.dataset.n === c.best) b.classList.add("best"); });
+    if (!right) btn.classList.add("wrong");
+    if (right) { G.streak += 1; G.score += 100 + 25 * (G.streak - 1); burst(btn, 20 + 8 * G.streak); } else G.streak = 0;
+    $("#gScore").textContent = G.score; $("#gStreak").textContent = G.streak;
+    $("#after").innerHTML = `<span>${right ? "Right call." : `The model backs ${nm(c.best)} here.`} Numbers are runs per 100 balls better than an average player in this situation.</span><button class="go" id="next">${G.round === 7 ? "See your result" : "Next situation"}</button>`;
+    $("#next").addEventListener("click", () => { G.round += 1; G.cur = deal(); drawGame(); });
+    $("#next").focus();
+  }));
+}
+
+/* ---------- rankings ---------- */
+const R = { tab: "bat", all: false };
+function ovr(list, p) { const lv = list.map(x => x.level), lo = Math.min(...lv), hi = Math.max(...lv); return Math.round(75 + 20 * (p.level - lo) / (hi - lo)); }
+function barHTML(label, v, scale) {
+  const w = Math.min(Math.abs(v) / scale, 1) * 50;
+  return `<div class="bar"><span>${label}</span><div class="track"><div class="fill ${v >= 0 ? "pos" : "neg"}" style="width:${w}%"></div></div><b>${signed(v)}</b></div>`;
+}
+function drawSheet() {
+  const bat = R.tab === "bat", list = bat ? DATA.batters : DATA.bowlers, avg = bat ? DATA.bat_avg : DATA.bowl_avg;
+  const labels = bat ? ["Boundaries", "Other runs", "Wicket kept"] : ["Boundaries", "Other runs", "Wickets"];
+  const scale = Math.max(...list.flatMap(p => Object.values(p.pieces).map(Math.abs)));
+  const ini = n => nm(n).split(" ").map(w => w[0]).slice(0, 2).join("");
+  $("#podium").innerHTML = list.slice(0, 3).map((p, i) => `<div class="pod p${i + 1}"><span class="medal">No. ${i + 1}</span><div class="av" aria-hidden="true">${ini(p.name)}</div><div class="pn">${nm(p.name)}</div><div class="pr">${ovr(list, p)}</div><div class="ps">${bat ? "strike rate " + p.sr : "economy " + p.econ} under pressure</div></div>`).join("");
+  $("#sheet").innerHTML = list.slice(0, R.all ? 30 : 10).map((p, i) => {
+    const facts = bat
+      ? [[p.sr, "strike rate", avg.sr], [p.avg, "average", avg.avg], [p.bnd + "%", "boundary balls", avg.bnd + "%"], [p.dot + "%", "dot balls", avg.dot + "%"]]
+      : [[p.econ, "economy", avg.econ], [p.bpw, "balls per wicket", avg.bpw], [p.dot + "%", "dot balls", avg.dot + "%"], [p.bnd + "%", "boundary balls", avg.bnd + "%"]];
+    const sits = Object.entries(p.sit).filter(e => e[1] !== null).map(e => `<span>${e[0]} <b>${signed(e[1])}</b></span>`).join("");
+    return `<button class="row ${i < 3 ? "top3" : ""}" aria-expanded="false" aria-controls="m${i}">
+        <span class="rk">${p.rank}</span>
+        <span class="nm">${nm(p.name)}<small>${p.role}, ${p.balls} pressure balls</small></span>
+        <span class="ovr" title="Pressure rating, scaled 75 to 95 across this top 30">${ovr(list, p)}</span>
+        <span class="how">${barHTML(labels[0], p.pieces.boundary, scale)}${barHTML(labels[1], p.pieces.rotation, scale)}${barHTML(labels[2], p.pieces.wicket, scale)}</span>
+        <span class="tw" aria-hidden="true">›</span>
+      </button>
+      <div class="more" id="m${i}">
+        <div class="facts">${facts.map(f => `<div class="fact"><b>${f[0]}</b><span>${f[1]} under pressure (all players ${f[2]})</span></div>`).join("")}
+          <div class="fact"><b>${signed(p.level)}</b><span>runs per 100 pressure balls above average, give or take ${p.sd}</span></div></div>
+        <div class="sits">${sits}</div>
+      </div>`;
+  }).join("");
+  $$("#sheet .row").forEach(row => row.addEventListener("click", () => {
+    const open = row.getAttribute("aria-expanded") === "true";
+    row.setAttribute("aria-expanded", String(!open));
+    $("#" + row.getAttribute("aria-controls")).classList.toggle("open", !open);
+  }));
+  $("#showAll").textContent = R.all ? "Show the top 10" : "Show the top 30";
+  $("#key").textContent = bat
+    ? `Bars show where his value comes from, in runs per 100 balls against an average player: hitting boundaries, scoring off the other balls, and not getting out. The white number is the pressure rating scaled from 75 to 95 across these 30. ${DATA.meta.bat_eligible} batters met the minimum of 120 pressure balls and 15 matches.`
+    : `Bars show where his value comes from, in runs per 100 balls against an average bowler: stopping boundaries, squeezing the other balls, and taking wickets. Wickets under pressure are mostly luck, so the rating leans on the first two. ${DATA.meta.bowl_eligible} bowlers met the minimum.`;
+}
+$$("[data-tab]").forEach(t => t.addEventListener("click", () => {
+  R.tab = t.dataset.tab; $$("[data-tab]").forEach(x => x.setAttribute("aria-selected", String(x === t))); drawSheet();
+}));
+$("#showAll").addEventListener("click", () => { R.all = !R.all; drawSheet(); });
+
+/* ---------- skill or luck ---------- */
+const NICE = { "boundary %": "Boundary rate", "six %": "Six rate", "attacking-shot %": "Attacking shots played", "strike rate": "Strike rate",
+  "dot-ball %": "Dot balls", "dismissal %": "Getting out", "slower-ball / cutter % (pace)": "Slower balls and cutters used (pace)",
+  "boundary conceded %": "Boundaries conceded", "wides + no-balls %": "Wides and no-balls", "yorker % (pace)": "Yorkers bowled (pace)",
+  "economy": "Economy", "wicket %": "Taking wickets" };
+function drawRepeat(role) {
+  const rows = DATA.repeat.filter(r => r.role === role).sort((a, b) => b.r - a.r);
+  $("#repeat").innerHTML = rows.map(r => `<div class="rp"><span class="lbl">${NICE[r.stat] || r.stat}</span>
+    <div class="track"><div class="fill ${r.r < 0.2 ? "luck" : ""}" style="width:0%" data-w="${Math.max(r.r, 0.01) * 100}"></div></div><b>${r.r.toFixed(2)}</b></div>`).join("");
+  requestAnimationFrame(() => $$("#repeat .fill").forEach(f => f.style.width = f.dataset.w + "%"));
+}
+$$("[data-rep]").forEach(t => t.addEventListener("click", () => {
+  $$("[data-rep]").forEach(x => x.setAttribute("aria-selected", String(x === t))); drawRepeat(t.dataset.rep);
+}));
+
+/* ---------- start ---------- */
+$("#mMatches").textContent = DATA.meta.matches.toLocaleString("en-IN");
+paint(); G.cur = deal(); drawGame(); drawSheet(); drawRepeat("bat");
+</script>
+</body>
+</html>

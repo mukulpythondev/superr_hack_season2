@@ -1,0 +1,7 @@
+# Direct dependencies. requirements-lock.txt has the full pinned environment.
+pandas==3.1.1
+numpy==2.5.4
+scikit-learn==1.9.1
+matplotlib==3.11.2
+seaborn==0.13.2
+ipykernel==7.4.0

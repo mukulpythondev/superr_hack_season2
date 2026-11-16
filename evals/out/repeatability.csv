@@ -1,0 +1,22 @@
+role,statistic,kind,repeat: cricket situations,player-seasons: cricket situations,repeat: model label,player-seasons: model label
+bat,boundary %,raw,0.42,194,0.44,138
+bat,six %,raw,0.3,194,0.37,138
+bat,attacking-shot %,raw,0.24,194,0.32,138
+bat,strike rate,raw,0.28,194,0.27,138
+bat,dot-ball %,raw,0.33,194,0.29,138
+bat,dismissal %,raw,0.13,194,0.07,138
+bat,boundary runs above expected,value,0.27,194,0.28,138
+bat,other runs above expected,value,0.39,194,0.38,138
+bat,"wicket kept, in runs",value,0.07,194,0.13,138
+bat,total value above expected,value,0.04,194,0.09,138
+bowl,slower-ball / cutter % (pace),raw,0.74,144,0.64,96
+bowl,dot-ball %,raw,0.35,228,0.43,156
+bowl,boundary conceded %,raw,0.34,228,0.4,156
+bowl,wides + no-balls %,raw,0.51,228,0.35,156
+bowl,yorker % (pace),raw,0.5,144,0.24,96
+bowl,economy,raw,0.22,228,0.28,156
+bowl,wicket %,raw,0.09,228,0.04,156
+bowl,boundary runs saved vs expected,value,0.21,228,0.04,156
+bowl,other runs saved vs expected,value,0.18,228,0.0,156
+bowl,"wickets taken, in runs",value,0.06,228,0.0,156
+bowl,total value above expected,value,0.02,228,0.03,156
